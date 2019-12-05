@@ -7,35 +7,49 @@
 
 ## Contents
 
-- [中文](#中文)
-- [English](#English)
 - [SQL Logic](#Logic)
 - [Build Info](#Build-Info)
 - [Author](#Author)
 - [License](#License) 
 
 If you are using SQL Server in an AWS environment then you’ll need to setup a system by which you can determine the memory or disk needs. The AWS charge model is pretty fair. You pay for what you use. How do you know if you need a larger AWS Instance Type or a lessor AWS Instance Type. By the way; an ‘Instance Type’ is how Amazon refers to the different Memory Packages you can utilize whenever you create or configure your Database Server Environments.
+
 如果你在AWS环境中使用SQLServer，那么你将会需要设置一个可以确定内存或磁盘需求的系统。AWS的收费模式非常公平。你只需要支付你已使用部分的费用。如何知道自己是否需要更大的AWS实例类型或出租方AWS实例类型？
 顺便说一下，“实例类型”是指Amazon在你创建或配置数据库服务器环境时可以使用的不同内存包。
+
 What can you do to configure the database environment in such a way that you can get a basic metric for how much is being used?
 Well… You can do this directly with just a handful of objects. It’s basically a slim down SQL monitoring solution. You create a single database, and collect the daily performance information with a few queries.
+
 采用哪种配置数据库环境的方式，才能获得使用量的基本指标呢？通过很少的几个对象（objects）你就可以实现。它大致是一种简单的SQL监控解决方案。你可以创建单个数据库，通过查询来收集每日的性能信息。
+
 In my case I created a database called DBSYSMON. The name is self explanatory meaning ‘Database System Monitor’ because I am only collecting performance information that is associated with the Database system it’s self.
+
 这次我创建了一个名叫DBSYSMON的数据库。字面意思是“数据库系统监视器”， 因为我只用它收集跟它自己的数据库系统相关的性能信息。
+
 The juicy part of this post is at the very bottom ( after you have created all the corresponding objects ).
+
 这篇文章的精华部分在最后面（在你完成创建所有相应的对象之后）。
+
 The SQL logic below creates the following objects to help you get things going.
+
 下面的SQL逻辑（logic）创建了以下对象，来帮助我们实现目标。
+
 Database: DBSYSMON
 Table: SDIVFS_IO_STATS
 Table: SDOPC_MAIN_TABLE
 Agent Job: DBSYSMON_COLLECTION
 Note: This logic was created for SQL Server 2012 editions so I would only recommend running this on newer environments.
+
 注意：这个逻辑（logic）是为SQL Server 2012版本写的，我建议在较新的环境中运行。
+
 The logic first goes to the registry to gather the default Data, and Log file paths so it will create the database according to your existing structure. Additionally; the database is set to simply recovery so you don’t have to manage any log growth as a result of your table queries, or general table population.
+
 此逻辑（logic）中首先用注册表（registry）收集默认数据和日志文件路径，根据现有的结构创建数据库。另外，数据库被设置为简单恢复（simply recovery），因此你就不需要管理因为表查询（table queries）或常规表填充（table population）导致的任何日志增长。
+
 Ok so I hear you ask; What’s the deal with the tables? Let’s take this one table at a time.
+
 我估计你会问，”这和表（table）有什么关系？”我们一个表一个表来看。
+
 Table: SDIVFS_IO_STATS
 Notice the prefix SDIVFS. This is basically the acronym for Sys.Dm_Io_Virtual_File_Stats so the table will store all the information from the DMV and has a Primary Key ( int identity ), and a timestamp so you can see when the performance information was collected. As you may already know the sys.dm_io_virtual_file_stats is cumulative, and only good since the last reboot, but… if you’re collecting them regularly then you can trend out the data and “since last restart ” is no longer the case. Some of the information will not be useful, but some of it will. You’ll have to run your own queries against it to see what you can use.
 
